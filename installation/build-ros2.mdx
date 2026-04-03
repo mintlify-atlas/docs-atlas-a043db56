@@ -1,0 +1,123 @@
+---
+title: "Build for ROS2"
+description: "Step-by-step instructions for building Livox ROS Driver 2 with ROS2 Foxy or Humble."
+---
+
+## Build steps
+
+<Steps>
+  <Step title="Source the ROS2 environment">
+    Source the setup script for your ROS2 distribution.
+
+    <Tabs>
+      <Tab title="Foxy">
+        ```bash
+        source /opt/ros/foxy/setup.sh
+        ```
+      </Tab>
+      <Tab title="Humble">
+        ```bash
+        source /opt/ros/humble/setup.sh
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Clone the repository">
+    Clone the driver into a `src/` subdirectory of your workspace.
+
+    ```bash
+    git clone https://github.com/Livox-SDK/livox_ros_driver2.git ws_livox/src/livox_ros_driver2
+    ```
+
+    <Warning>
+      The source must be placed inside a `[work_space]/src/` directory.
+      Placing it elsewhere will cause colcon build errors.
+    </Warning>
+  </Step>
+
+  <Step title="Install Livox-SDK2">
+    Build and install the Livox-SDK2 library by following the instructions in
+    the [Livox-SDK2 README](https://github.com/Livox-SDK/Livox-SDK2/blob/master/README.md).
+
+    The build script expects `liblivox_lidar_sdk_shared.so` to be present in
+    `/usr/local/lib` before proceeding.
+  </Step>
+
+  <Step title="Run the build script">
+    From inside the cloned repository directory, run the build script with the
+    argument that matches your ROS2 distribution.
+
+    <Tabs>
+      <Tab title="Foxy">
+        ```bash
+        cd ws_livox/src/livox_ros_driver2
+        ./build.sh ROS2
+        ```
+      </Tab>
+      <Tab title="Humble">
+        ```bash
+        cd ws_livox/src/livox_ros_driver2
+        ./build.sh humble
+        ```
+      </Tab>
+    </Tabs>
+
+    The script performs the following actions:
+
+    1. Copies `package_ROS2.xml` to `package.xml` and copies `launch_ROS2/` to `launch/`.
+    2. Clears previous `build/`, `devel/`, and `install/` directories.
+    3. Runs `colcon build` from the workspace root with the appropriate CMake arguments:
+       - Foxy: `colcon build --cmake-args -DROS_EDITION=ROS2 -DHUMBLE_ROS=`
+       - Humble: `colcon build --cmake-args -DROS_EDITION=ROS2 -DHUMBLE_ROS=humble`
+
+    <Note>
+      The `HUMBLE_ROS` CMake variable controls how custom message type support
+      headers are linked. Humble uses a different `rosidl` API than Foxy.
+    </Note>
+  </Step>
+
+  <Step title="Source the workspace">
+    After a successful build, source the generated setup script.
+
+    ```bash
+    source ../../install/setup.sh
+    ```
+
+    Run this from the `livox_ros_driver2` directory. The `install/` folder is
+    two levels up, at the workspace root.
+  </Step>
+</Steps>
+
+## Run the driver
+
+Launch the driver with a ROS2 launch file from the `launch_ROS2/` directory:
+
+```bash
+ros2 launch livox_ros_driver2 rviz_HAP_launch.py
+```
+
+Refer to the [launch file reference](/configuration/launch-files) for all
+available launch files and their parameters.
+
+## Troubleshooting
+
+### Cannot open shared object file: liblivox\_sdk\_shared.so
+
+If the driver fails to launch with a shared library error, the dynamic linker
+cannot find `liblivox_lidar_sdk_shared.so`. Add `/usr/local/lib` to
+`LD_LIBRARY_PATH`.
+
+<Tabs>
+  <Tab title="Current terminal only">
+    ```bash
+    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
+    ```
+  </Tab>
+  <Tab title="Persist for current user">
+    ```bash
+    echo 'export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib' >> ~/.bashrc
+    source ~/.bashrc
+    ```
+  </Tab>
+</Tabs>

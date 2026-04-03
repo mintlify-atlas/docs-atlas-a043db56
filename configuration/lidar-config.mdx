@@ -1,0 +1,184 @@
+---
+title: 'LiDAR config files'
+description: 'JSON configuration file format for HAP and Mid360 LiDAR devices, including network settings and per-device parameters.'
+---
+
+LiDAR configuration files set the network addresses, port numbers, and per-device options for each connected sensor. Config files live in the `config/` directory of the package. The `user_config_path` parameter in each launch file points to the relevant config file.
+
+<Note>
+  Config files use a JSON-like syntax. The `#` comment style shown in the README is illustrative — actual JSON files do not support comments.
+</Note>
+
+## HAP config
+
+The file `config/HAP_config.json` is used by `rviz_HAP.launch`, `msg_HAP.launch`, and the ROS2 equivalents.
+
+```json config/HAP_config.json
+{
+  "lidar_summary_info": {
+    "lidar_type": 8
+  },
+  "HAP": {
+    "lidar_net_info": {
+      "cmd_data_port": 56000,
+      "push_msg_port": 0,
+      "point_data_port": 57000,
+      "imu_data_port": 58000,
+      "log_data_port": 59000
+    },
+    "host_net_info": {
+      "cmd_data_ip": "192.168.1.5",
+      "cmd_data_port": 56000,
+      "push_msg_ip": "",
+      "push_msg_port": 0,
+      "point_data_ip": "192.168.1.5",
+      "point_data_port": 57000,
+      "imu_data_ip": "192.168.1.5",
+      "imu_data_port": 58000,
+      "log_data_ip": "",
+      "log_data_port": 59000
+    }
+  },
+  "lidar_configs": [
+    {
+      "ip": "192.168.1.100",
+      "pcl_data_type": 1,
+      "pattern_mode": 0,
+      "blind_spot_set": 50,
+      "extrinsic_parameter": {
+        "roll": 0.0,
+        "pitch": 0.0,
+        "yaw": 0.0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    }
+  ]
+}
+```
+
+## Mid360 config
+
+The file `config/MID360_config.json` is used by `rviz_MID360.launch`, `msg_MID360.launch`, and the ROS2 equivalents.
+
+```json config/MID360_config.json
+{
+  "lidar_summary_info": {
+    "lidar_type": 8
+  },
+  "MID360": {
+    "lidar_net_info": {
+      "cmd_data_port": 56100,
+      "push_msg_port": 56200,
+      "point_data_port": 56300,
+      "imu_data_port": 56400,
+      "log_data_port": 56500
+    },
+    "host_net_info": {
+      "cmd_data_ip": "192.168.1.5",
+      "cmd_data_port": 56101,
+      "push_msg_ip": "192.168.1.5",
+      "push_msg_port": 56201,
+      "point_data_ip": "192.168.1.5",
+      "point_data_port": 56301,
+      "imu_data_ip": "192.168.1.5",
+      "imu_data_port": 56401,
+      "log_data_ip": "",
+      "log_data_port": 56501
+    }
+  },
+  "lidar_configs": [
+    {
+      "ip": "192.168.1.12",
+      "pcl_data_type": 1,
+      "pattern_mode": 0,
+      "extrinsic_parameter": {
+        "roll": 0.0,
+        "pitch": 0.0,
+        "yaw": 0.0,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    }
+  ]
+}
+```
+
+## Parameter reference
+
+### Global
+
+<ParamField path="lidar_summary_info.lidar_type" type="number" default="8">
+  Protocol type index. This value identifies the Livox SDK2 protocol version. **Do not change this value.**
+</ParamField>
+
+### LiDAR network info (`lidar_net_info`)
+
+These are the fixed ports used by the LiDAR device itself. Do not change them unless directed by Livox documentation.
+
+| Parameter | HAP | Mid360 | Description |
+|---|---|---|---|
+| `cmd_data_port` | 56000 | 56100 | Command channel port |
+| `push_msg_port` | 0 | 56200 | Push message port |
+| `point_data_port` | 57000 | 56300 | Point cloud data port |
+| `imu_data_port` | 58000 | 56400 | IMU data port |
+| `log_data_port` | 59000 | 56500 | Log data port |
+
+### Host network info (`host_net_info`)
+
+These fields configure the network interface on the host computer that receives data from the LiDAR.
+
+<ParamField path="host_net_info.cmd_data_ip" type="string" default="192.168.1.5">
+  IP address of the host NIC used for the command channel. Set this to the IP address of the network interface connected to the LiDAR.
+</ParamField>
+
+<ParamField path="host_net_info.point_data_ip" type="string" default="192.168.1.5">
+  IP address of the host NIC that receives point cloud data.
+</ParamField>
+
+<ParamField path="host_net_info.imu_data_ip" type="string" default="192.168.1.5">
+  IP address of the host NIC that receives IMU data.
+</ParamField>
+
+### Per-device config (`lidar_configs` array)
+
+Each entry in `lidar_configs` configures one physical LiDAR. Add one object per device when connecting multiple units.
+
+<ParamField path="ip" type="string" default="192.168.1.100">
+  IP address of the LiDAR device you want to configure. Set this to match the actual IP assigned to your sensor.
+</ParamField>
+
+<ParamField path="pcl_data_type" type="number" default="1">
+  Resolution and coordinate system of the point cloud data sent by the LiDAR:
+
+  - `1` — Cartesian coordinates, 32-bit
+  - `2` — Cartesian coordinates, 16-bit
+  - `3` — Spherical coordinates
+</ParamField>
+
+<ParamField path="pattern_mode" type="number" default="0">
+  Spatial scan pattern used by the LiDAR:
+
+  - `0` — Non-repeating scan pattern
+  - `1` — Repeating scan pattern
+  - `2` — Repeating scan pattern at a lower scanning rate
+</ParamField>
+
+<ParamField path="blind_spot_set" type="number" default="50">
+  **HAP only.** Sets the blind spot distance in centimeters. Valid range is `50` to `200` cm. Points closer than this distance are filtered out.
+</ParamField>
+
+<ParamField path="extrinsic_parameter" type="object">
+  Extrinsic calibration parameters that describe the physical position and orientation of the LiDAR relative to the robot base frame.
+
+  | Field | Type | Description |
+  |---|---|---|
+  | `roll` | float | Roll angle in degrees |
+  | `pitch` | float | Pitch angle in degrees |
+  | `yaw` | float | Yaw angle in degrees |
+  | `x` | int | X translation in mm |
+  | `y` | int | Y translation in mm |
+  | `z` | int | Z translation in mm |
+</ParamField>

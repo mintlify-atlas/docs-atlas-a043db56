@@ -1,0 +1,65 @@
+---
+title: "Requirements"
+description: "System requirements and dependencies for building Livox ROS Driver 2."
+---
+
+Before building the driver, make sure your system meets the OS and software requirements below.
+
+## Operating system and ROS compatibility
+
+| Ubuntu version | ROS distribution | ROS generation |
+| -------------- | ---------------- | -------------- |
+| 18.04 Bionic   | Melodic          | ROS1           |
+| 20.04 Focal    | Noetic           | ROS1           |
+| 20.04 Focal    | Foxy             | ROS2           |
+| 22.04 Jammy    | Humble           | ROS2           |
+
+<Tip>
+  Desktop-Full installation is recommended for all ROS distributions, as it
+  includes RViz and other tools used by the driver's launch files.
+</Tip>
+
+## ROS installation
+
+Install the ROS distribution that matches your Ubuntu version:
+
+- **Melodic** — [ROS Melodic installation instructions](https://wiki.ros.org/melodic/Installation)
+- **Noetic** — [ROS Noetic installation instructions](https://wiki.ros.org/noetic/Installation)
+- **Foxy** — [ROS2 Foxy installation instructions](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html)
+- **Humble** — [ROS2 Humble installation instructions](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html)
+
+## Colcon (ROS2 only)
+
+ROS2 builds use **colcon** as the build tool. If colcon is not already installed with your ROS2 distribution, follow the [colcon installation instructions](https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html).
+
+## Livox-SDK2
+
+Livox ROS Driver 2 depends on the **Livox-SDK2** library, which must be built and installed separately before building the driver.
+
+Follow the installation steps in the [Livox-SDK2 README](https://github.com/Livox-SDK/Livox-SDK2/blob/master/README.md).
+
+<Note>
+  The CMake build looks for `liblivox_lidar_sdk_static.a` (ROS1) and
+  `liblivox_lidar_sdk_shared.so` (ROS2) in `/usr/local/lib`. Install
+  Livox-SDK2 before running the driver build script.
+</Note>
+
+## Source directory requirement
+
+<Warning>
+  You must clone the driver source into a `[work_space]/src/` directory.
+  Placing it anywhere else will cause compilation errors due to restrictions in
+  the catkin and colcon build tools.
+</Warning>
+
+```bash
+git clone https://github.com/Livox-SDK/livox_ros_driver2.git ws_livox/src/livox_ros_driver2
+```
+
+The workspace layout should look like this:
+
+```
+ws_livox/
+└── src/
+    └── livox_ros_driver2/
+```

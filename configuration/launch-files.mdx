@@ -1,0 +1,141 @@
+---
+title: 'Launch files'
+description: 'Reference for all available ROS1 and ROS2 launch files and their configuration parameters.'
+---
+
+Launch files are located in `launch_ROS1/` for ROS and `launch_ROS2/` for ROS2. Each file sets a default configuration suited for a specific scenario — you can override individual parameters at launch time.
+
+## ROS1 launch files
+
+| File | LiDAR | Output format | RViz |
+|---|---|---|---|
+| `rviz_HAP.launch` | HAP | PointXYZRTLT (pointcloud2) | Yes |
+| `msg_HAP.launch` | HAP | Livox custom pointcloud | No |
+| `rviz_MID360.launch` | Mid360 | PointXYZRTLT (pointcloud2) | Yes |
+| `msg_MID360.launch` | Mid360 | Livox custom pointcloud | No |
+| `rviz_mixed.launch` | HAP + Mid360 | PointXYZRTLT (pointcloud2) | Yes |
+| `msg_mixed.launch` | HAP + Mid360 | Livox custom pointcloud | No |
+
+## ROS2 launch files
+
+| File | LiDAR | Output format | RViz |
+|---|---|---|---|
+| `rviz_HAP_launch.py` | HAP | PointXYZRTLT (pointcloud2) | Yes |
+| `msg_HAP_launch.py` | HAP | Livox custom pointcloud | No |
+| `rviz_MID360_launch.py` | Mid360 | PointXYZRTLT (pointcloud2) | Yes |
+| `msg_MID360_launch.py` | Mid360 | Livox custom pointcloud | No |
+| `rviz_mixed.py` | HAP + Mid360 | PointXYZRTLT (pointcloud2) | Yes |
+
+## Launch commands
+
+<CodeGroup>
+
+```bash ROS1 — HAP with RViz
+source ../../devel/setup.sh
+roslaunch livox_ros_driver2 rviz_HAP.launch
+```
+
+```bash ROS1 — Mid360 with RViz
+source ../../devel/setup.sh
+roslaunch livox_ros_driver2 rviz_MID360.launch
+```
+
+```bash ROS1 — mixed HAP + Mid360
+source ../../devel/setup.sh
+roslaunch livox_ros_driver2 rviz_mixed.launch
+```
+
+```bash ROS2 — HAP with RViz
+source ../../install/setup.sh
+ros2 launch livox_ros_driver2 rviz_HAP_launch.py
+```
+
+```bash ROS2 — Mid360 with RViz
+source ../../install/setup.sh
+ros2 launch livox_ros_driver2 rviz_MID360_launch.py
+```
+
+```bash ROS2 — mixed HAP + Mid360
+source ../../install/setup.sh
+ros2 launch livox_ros_driver2 rviz_mixed.py
+```
+
+</CodeGroup>
+
+## Parameter reference
+
+All driver parameters are set inside the launch file. The three parameters you are most likely to change are described below.
+
+<Warning>
+  Parameters not listed here are not recommended to be changed unless you fully understand their effect.
+</Warning>
+
+<ParamField path="publish_freq" type="number" default="10.0">
+  Publish frequency of the point cloud topic in Hz. Recommended values are `5.0`, `10.0`, `20.0`, and `50.0`. The maximum supported frequency is `100.0` Hz.
+</ParamField>
+
+<ParamField path="multi_topic" type="number" default="0">
+  Controls whether each LiDAR device publishes to its own topic or a shared topic.
+
+  - `0` — all connected LiDAR devices share a single topic
+  - `1` — each LiDAR device publishes to an individual topic (topic name includes the device IP suffix)
+</ParamField>
+
+<ParamField path="xfer_format" type="number" default="0">
+  Selects the point cloud data format published by the driver.
+
+  - `0` — Livox pointcloud2 (`PointXYZRTLT`): includes reflectivity, tag, line number, and per-point timestamp
+  - `1` — Livox customized pointcloud format (`CustomMsg`)
+  - `2` — Standard PCL `PointXYZI` format — **ROS1 only**
+</ParamField>
+
+## Point cloud format details
+
+<AccordionGroup>
+  <Accordion title="PointXYZRTLT (xfer_format = 0)">
+    Published as `sensor_msgs/PointCloud2`. Each point contains:
+
+    ```c
+    float32 x          // X axis, unit: m
+    float32 y          // Y axis, unit: m
+    float32 z          // Z axis, unit: m
+    float32 intensity  // Reflectivity, 0.0–255.0
+    uint8   tag        // Livox tag
+    uint8   line       // Laser number in LiDAR
+    float64 timestamp  // Per-point timestamp
+    ```
+
+    The number of points per frame may vary, but every point carries an individual timestamp.
+  </Accordion>
+
+  <Accordion title="Livox CustomMsg (xfer_format = 1)">
+    Published as the Livox `CustomMsg` type. The message header contains:
+
+    ```c
+    std_msgs/Header header    // ROS standard header
+    uint64          timebase  // Timestamp of the first point
+    uint32          point_num // Total number of points
+    uint8           lidar_id  // LiDAR device ID
+    uint8[3]        rsvd      // Reserved
+    CustomPoint[]   points    // Point data array
+    ```
+
+    Each `CustomPoint` contains:
+
+    ```c
+    uint32  offset_time  // Offset from timebase
+    float32 x            // X axis, unit: m
+    float32 y            // Y axis, unit: m
+    float32 z            // Z axis, unit: m
+    uint8   reflectivity // Reflectivity, 0–255
+    uint8   tag          // Livox tag
+    uint8   line         // Laser number in LiDAR
+    ```
+  </Accordion>
+
+  <Accordion title="PCL PointXYZI (xfer_format = 2, ROS1 only)">
+    Published as a standard `sensor_msgs/PointCloud2` using the PCL `PointXYZI` structure. Refer to `point_types.hpp` in the PCL library for field definitions.
+
+    <Note>This format is not available in ROS2.</Note>
+  </Accordion>
+</AccordionGroup>

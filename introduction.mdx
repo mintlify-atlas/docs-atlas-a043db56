@@ -1,0 +1,73 @@
+---
+title: "Introduction"
+description: "Livox ROS Driver 2 is the second-generation ROS driver for Livox LiDAR devices, supporting ROS (Noetic recommended) and ROS2 (Foxy or Humble recommended)."
+---
+
+## Overview
+
+Livox ROS Driver 2 is the official driver package for connecting Livox LiDAR products to ROS-based systems. It handles communication with the LiDAR hardware over Ethernet and publishes sensor data as standard ROS topics, making it straightforward to integrate Livox sensors into robotics and autonomous systems pipelines.
+
+The driver is the second-generation package, built on top of [Livox-SDK2](https://github.com/Livox-SDK/Livox-SDK2), and replaces the original Livox ROS Driver with improved multi-device support and ROS2 compatibility.
+
+**Version:** 1.2.4
+
+<Note>
+  Livox ROS Driver 2 is a debugging tool intended for test scenarios only. It is **not recommended for mass production** use. You should optimize the code based on the original source to meet your specific requirements.
+</Note>
+
+## Supported devices
+
+| Device | Type | Notes |
+| ------ | ---- | ----- |
+| HAP | Solid-state LiDAR | Supports blind spot configuration (50–200 cm) |
+| Mid-360 | Solid-state LiDAR | 360° horizontal field of view |
+
+More device types are coming soon.
+
+## Supported ROS versions
+
+| ROS version | Ubuntu version | Build argument |
+| ----------- | -------------- | -------------- |
+| ROS1 Melodic | Ubuntu 18.04 | `ROS1` |
+| ROS1 Noetic | Ubuntu 20.04 | `ROS1` |
+| ROS2 Foxy | Ubuntu 20.04 | `ROS2` |
+| ROS2 Humble | Ubuntu 22.04 | `humble` |
+
+Desktop-Full installation is recommended for all ROS versions.
+
+## How it fits into a ROS ecosystem
+
+Once running, the driver node connects to one or more Livox LiDAR units over a local Ethernet network and publishes sensor data on standard ROS topics. Downstream nodes — such as mapping, localization, or obstacle detection algorithms — subscribe to these topics directly.
+
+The driver publishes:
+
+- **Point cloud data** — Available in three formats: Livox PointCloud2 (`PointXYZRTLT`), Livox customized format, or standard PCL `PointXYZI`. Configurable via the `xfer_format` parameter.
+- **IMU data** — Inertial measurement data streamed from the LiDAR, available on its own topic.
+
+The publish frequency is configurable (default 10 Hz, up to 100 Hz), and each device can share a common topic or publish to its own independent topic using the `multi_topic` parameter.
+
+## Key capabilities
+
+- Supports HAP and Mid-360 LiDAR devices
+- Compatible with ROS1 (Melodic, Noetic) and ROS2 (Foxy, Humble)
+- Per-device JSON configuration files for IP addresses, ports, scan patterns, and extrinsic parameters
+- Multi-LiDAR support — connect and mix HAP and Mid-360 devices simultaneously
+- Configurable point cloud format, publish frequency, and frame ID
+- Launches with RViz for immediate point cloud visualization
+
+## Explore the documentation
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get from zero to streaming point clouds in minutes.
+  </Card>
+  <Card title="Installation" icon="wrench" href="/installation/requirements">
+    Detailed prerequisites, build steps, and SDK setup.
+  </Card>
+  <Card title="Configuration" icon="sliders" href="/configuration/launch-files">
+    Configure launch files, LiDAR IP addresses, scan patterns, and more.
+  </Card>
+  <Card title="Message formats" icon="message" href="/messages/overview">
+    Reference for published point cloud and IMU message structures.
+  </Card>
+</CardGroup>

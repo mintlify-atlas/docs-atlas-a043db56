@@ -1,0 +1,77 @@
+---
+title: "Time synchronization"
+description: "Configure gPTP and GPS time synchronization for Livox LiDAR devices."
+---
+
+Accurate timestamps are essential for sensor fusion and multi-sensor setups. Livox ROS Driver 2 supports two external time synchronization protocols: **gPTP (IEEE 1588 Precision Time Protocol)** and **GPS time synchronization**. Support for both was improved in v1.2.0.
+
+## Supported synchronization methods
+
+### gPTP (IEEE 1588)
+
+gPTP (generalized Precision Time Protocol) synchronizes the LiDAR clock to a grandmaster clock on the network. The LiDAR and host must be connected to a network switch that supports IEEE 1588.
+
+Key points:
+
+- The LiDAR hardware handles clock synchronization directly.
+- No additional driver configuration is required beyond enabling gPTP on your network.
+- gPTP support was improved in v1.2.0.
+
+### GPS time synchronization
+
+GPS synchronization uses a GPS receiver to discipline the host clock (via PPS signal and NMEA), which the LiDAR then uses as a time reference.
+
+Key points:
+
+- Requires a GPS receiver connected to the host.
+- The host must be configured to use the GPS PPS signal as a clock source (typically via `gpsd` and `chrony` or `ptp4l`).
+- GPS sync support was improved in v1.2.0.
+
+## Per-point timestamps (since v1.2.0)
+
+<Note>
+  Per-point timestamps are only available in the `PointXYZRTLT` format (`xfer_format=0`). The custom message format (`xfer_format=1`) uses a single `timebase` field for the frame rather than per-point timestamps.
+</Note>
+
+Starting in v1.2.0, every point in the `PointXYZRTLT` point cloud carries its own `float64` timestamp field. This means each point records the precise time it was captured, rather than all points in a frame sharing one timestamp.
+
+The `PointXYZRTLT` format fields are:
+
+```c
+float32 x            # X axis, unit: m
+float32 y            # Y axis, unit: m
+float32 z            # Z axis, unit: m
+float32 intensity    # Reflectivity, 0.0–255.0
+uint8   tag          # Livox tag
+uint8   line         # Laser number in LiDAR
+float64 timestamp    # Timestamp of this individual point
+```
+
+The `timestamp` field contains the absolute time of each point in seconds. When gPTP or GPS synchronization is active, this timestamp reflects the synchronized clock, giving sub-millisecond accuracy across points within the same frame.
+
+## Variable point counts per frame
+
+Since v1.2.0, the frame segmentation logic was revised. As a result, **the number of points in each published frame may vary** between frames. This is expected behavior and is not an error.
+
+<Note>
+  Prior to v1.2.0, frames had a more consistent point count. If your downstream pipeline assumes a fixed number of points per frame, update it to handle variable-length frames.
+</Note>
+
+The trade-off is that each point now carries its own timestamp, which enables more precise time-of-flight and motion compensation calculations.
+
+## Choosing `xfer_format` for time-sensitive applications
+
+| `xfer_format` | Format | Per-point timestamp | Notes |
+|---|---|---|---|
+| `0` | `PointXYZRTLT` (PointCloud2) | Yes (`float64`) | Recommended for time-sync use cases |
+| `1` | Livox CustomMsg | No (frame `timebase` only) | Useful for custom processing pipelines |
+| `2` | PCL `PointXYZI` (PointCloud2) | No | ROS1 only; no timestamp field |
+
+For time synchronization use cases, use `xfer_format=0` to get per-point `float64` timestamps.
+
+## Version history
+
+| Version | Change |
+|---|---|
+| v1.2.0 | Added per-point `float64` timestamp to `PointXYZRTLT`; improved gPTP and GPS sync support; revised frame segmentation |
+| Pre-v1.2.0 | Used `PointXYZRTL` format (no per-point timestamp); consistent frame point counts |

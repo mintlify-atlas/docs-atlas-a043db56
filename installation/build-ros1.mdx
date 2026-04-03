@@ -1,0 +1,91 @@
+---
+title: "Build for ROS1"
+description: "Step-by-step instructions for building Livox ROS Driver 2 with ROS Noetic or Melodic."
+---
+
+<Warning>
+  You must clone the source into a `[work_space]/src/` directory. Placing it
+  anywhere else causes compilation errors because catkin restricts where the
+  source tree can live.
+</Warning>
+
+## Build steps
+
+<Steps>
+  <Step title="Source the ROS environment">
+    Source the setup script for your ROS distribution. Noetic is recommended;
+    substitute `melodic` if you are on Ubuntu 18.04.
+
+    <CodeGroup>
+
+    ```bash Noetic
+    source /opt/ros/noetic/setup.sh
+    ```
+
+    ```bash Melodic
+    source /opt/ros/melodic/setup.sh
+    ```
+
+    </CodeGroup>
+  </Step>
+
+  <Step title="Clone the repository">
+    Clone the driver into a `src/` subdirectory of your workspace.
+
+    ```bash
+    git clone https://github.com/Livox-SDK/livox_ros_driver2.git ws_livox/src/livox_ros_driver2
+    ```
+  </Step>
+
+  <Step title="Install Livox-SDK2">
+    Build and install the Livox-SDK2 library by following the instructions in
+    the [Livox-SDK2 README](https://github.com/Livox-SDK/Livox-SDK2/blob/master/README.md).
+
+    The build script expects `liblivox_lidar_sdk_static.a` to be present in
+    `/usr/local/lib` before proceeding.
+  </Step>
+
+  <Step title="Run the build script">
+    From inside the cloned repository directory, run:
+
+    ```bash
+    cd ws_livox/src/livox_ros_driver2
+    ./build.sh ROS1
+    ```
+
+    The script performs the following actions:
+
+    1. Copies `package_ROS1.xml` to `package.xml`.
+    2. Clears previous `build/`, `devel/`, and `install/` directories.
+    3. Runs `catkin_make -DROS_EDITION=ROS1` from the workspace root.
+
+    <Note>
+      The `catkin_make` invocation sets the `ROS_EDITION=ROS1` CMake variable,
+      which selects the ROS1 branch of `CMakeLists.txt`.
+    </Note>
+  </Step>
+
+  <Step title="Source the workspace">
+    After a successful build, source the generated setup script to make the
+    driver available in your shell.
+
+    ```bash
+    source ../../devel/setup.sh
+    ```
+
+    Run this command from the `livox_ros_driver2` directory, or adjust the
+    relative path based on your current working directory. The `devel/` folder
+    is two levels up, at the workspace root.
+  </Step>
+</Steps>
+
+## Run the driver
+
+Launch the driver with a ROS launch file from the `launch_ROS1/` directory:
+
+```bash
+roslaunch livox_ros_driver2 rviz_HAP.launch
+```
+
+Refer to the [launch file reference](/configuration/launch-files) for all
+available launch files and their parameters.

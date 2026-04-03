@@ -1,97 +1,70 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Livox ROS Driver 2"
+description: "The official ROS/ROS2 driver for Livox LiDAR sensors — connect HAP and Mid-360 devices and stream point cloud and IMU data into your robotics stack."
 ---
 
-## Setting up
+Livox ROS Driver 2 is the second-generation driver package for connecting Livox LiDAR products to ROS and ROS2. It supports the HAP and Mid-360 LiDAR sensors and publishes point cloud data in multiple formats — including the standard `sensor_msgs/PointCloud2`, the Livox custom format, and the PCL `PointXYZI` format — as well as IMU data.
 
-Get your documentation site up and running in minutes.
+<Note>
+  Livox ROS Driver 2 is intended for testing and development scenarios. For mass production deployments, you should optimize the driver source code to meet your specific requirements.
+</Note>
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+## Get started
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Connect your first LiDAR and publish point cloud data in minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Installation" icon="download" href="/installation/requirements">
+    System requirements, dependencies, and build instructions for ROS and ROS2.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Configuration" icon="sliders" href="/configuration/launch-files">
+    Configure launch files, LiDAR settings, and multi-sensor setups.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Message formats" icon="message" href="/messages/overview">
+    Understand the point cloud and IMU message types published by the driver.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Supported hardware
 
-Everything you need to create world-class documentation.
+Livox ROS Driver 2 supports the following LiDAR devices:
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+| Device | Description |
+|--------|-------------|
+| **HAP** | Solid-state LiDAR with high-density scanning |
+| **Mid-360** | 360° hemispherical LiDAR for autonomous navigation |
 
-## Need inspiration?
+## Key features
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Dual ROS support" icon="code-branch">
+    Works with ROS1 (Melodic, Noetic) and ROS2 (Foxy, Humble) from a single codebase.
+  </Card>
+  <Card title="Multiple output formats" icon="layer-group">
+    Publish as `PointXYZRTLT`, Livox `CustomMsg`, or standard PCL `PointXYZI`.
+  </Card>
+  <Card title="Multi-LiDAR" icon="network-wired">
+    Connect multiple HAP and Mid-360 sensors simultaneously, with per-device topics.
+  </Card>
+  <Card title="Time synchronization" icon="clock">
+    Support for gPTP and GPS time synchronization for accurate timestamping.
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Install dependencies">
+    Install ROS or ROS2, then build and install the Livox-SDK2 library.
+  </Step>
+  <Step title="Build the driver">
+    Clone the repository into your ROS workspace and run the build script for your ROS version.
+  </Step>
+  <Step title="Configure your LiDAR">
+    Edit the JSON config file to set your LiDAR's IP address, ports, and scan parameters.
+  </Step>
+  <Step title="Launch and visualize">
+    Use one of the provided launch files to start the driver and visualize point clouds in RViz.
+  </Step>
+</Steps>

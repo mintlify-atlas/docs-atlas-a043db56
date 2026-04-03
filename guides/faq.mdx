@@ -1,0 +1,97 @@
+---
+title: "FAQ"
+description: "Answers to frequently asked questions about Livox ROS Driver 2."
+---
+
+<AccordionGroup>
+  <Accordion title="No point cloud display in RViz">
+    The most common cause is an incorrect **Fixed Frame** setting in RViz.
+
+    1. In the **Displays** panel, expand **Global Options**.
+    2. Set **Fixed Frame** to `livox_frame`.
+    3. Confirm that the **PointCloud2** checkbox in the Displays panel is checked (enabled).
+
+    The bundled `.rviz` configuration files set this automatically. If you opened RViz manually or reset the configuration, you must set it again.
+
+    See the [RViz visualization guide](/guides/rviz-visualization) for the full setup walkthrough.
+  </Accordion>
+
+  <Accordion title="Cannot open liblivox_sdk_shared.so">
+    This error occurs when `/usr/local/lib` is not in the dynamic linker search path. Add it to `LD_LIBRARY_PATH`.
+
+    **For the current terminal session only:**
+
+    ```bash
+    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
+    ```
+
+    **To persist across sessions**, add the export to `~/.bashrc`:
+
+    ```bash
+    echo 'export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib' >> ~/.bashrc
+    source ~/.bashrc
+    ```
+  </Accordion>
+
+  <Accordion title="High CPU usage">
+    High CPU usage was a known issue fixed in **v1.1.2**. If you are experiencing high CPU usage, upgrade to v1.1.2 or later.
+
+    Additional framing-related CPU optimizations were made in v1.2.3 and v1.2.4. Using the latest release is recommended.
+  </Accordion>
+
+  <Accordion title="Different point counts per frame">
+    This is expected behavior since **v1.2.0**, which revised the frame segmentation logic. The number of points published per frame is no longer constant and will vary between frames.
+
+    Each point now carries its own `float64` timestamp field in the `PointXYZRTLT` format, which is the trade-off for variable frame sizes.
+
+    If your downstream pipeline assumes a fixed number of points per frame, update it to handle variable-length point clouds. See the [time synchronization guide](/guides/time-synchronization) for more details on per-point timestamps.
+  </Accordion>
+
+  <Accordion title="Multi-topic naming convention">
+    When `multi_topic=1` is set in the launch file, each LiDAR device publishes to its own topic instead of the shared `/livox/lidar` topic. The topic name includes a suffix derived from the LiDAR's IP address.
+
+    For example, a LiDAR at `192.168.1.100` would publish to a topic like `/livox/lidar_192_168_1_100`.
+
+    When `multi_topic=0` (the default), all connected LiDARs publish to the same `/livox/lidar` topic.
+  </Accordion>
+
+  <Accordion title="ROS2: PCL PointXYZI format not available">
+    The PCL native data type format (`xfer_format=2`, which outputs `pcl::PointXYZI`) is **only supported in ROS1**. ROS2 does not support message passing with PCL native data types.
+
+    In ROS2, use one of the supported formats:
+
+    | `xfer_format` | Format | ROS2 support |
+    |---|---|---|
+    | `0` | `PointXYZRTLT` (PointCloud2) | Yes |
+    | `1` | Livox CustomMsg | Yes |
+    | `2` | PCL `PointXYZI` (PointCloud2) | No (ROS1 only) |
+  </Accordion>
+
+  <Accordion title="Build errors: package not found or compilation fails">
+    The most common cause is cloning the repository into the wrong directory. The source code **must** be inside a `src/` subdirectory of your workspace.
+
+    Clone using the path structure shown below:
+
+    ```bash
+    git clone https://github.com/Livox-SDK/livox_ros_driver2.git ws_livox/src/livox_ros_driver2
+    ```
+
+    Then build from the workspace root (`ws_livox/`), not from inside the package directory:
+
+    <CodeGroup>
+
+    ```bash ROS1 (Noetic)
+    source /opt/ros/noetic/setup.sh
+    ./build.sh ROS1
+    ```
+
+    ```bash ROS2 (Humble)
+    source /opt/ros/humble/setup.sh
+    ./build.sh humble
+    ```
+
+    </CodeGroup>
+
+    Also ensure that **Livox-SDK2** is installed before building. See the [Livox-SDK2 README](https://github.com/Livox-SDK/Livox-SDK2/blob/master/README.md) for installation instructions.
+  </Accordion>
+</AccordionGroup>

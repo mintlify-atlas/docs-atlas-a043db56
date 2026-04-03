@@ -1,0 +1,192 @@
+---
+title: "Point cloud formats"
+description: "Field-level reference for all three point cloud output formats: PointXYZRTLT, Livox CustomMsg, and PCL PointXYZI."
+---
+
+The `xfer_format` parameter in your launch file selects which point cloud message type the driver publishes. All three formats use the topic `/livox/lidar` (or a per-device topic when `multi_topic=1`).
+
+<Tabs>
+  <Tab title="PointXYZRTLT (format 0)">
+
+## PointXYZRTLT format
+
+Set `xfer_format=0` to publish a `sensor_msgs/PointCloud2` message with the following seven custom fields.
+
+```c
+float32 x          # X axis, unit:m
+float32 y          # Y axis, unit:m
+float32 z          # Z axis, unit:m
+float32 intensity  # reflectivity, 0.0~255.0
+uint8   tag        # livox tag
+uint8   line       # laser number in lidar
+float64 timestamp  # Timestamp of point
+```
+
+<Note>
+  Each point carries its own absolute timestamp. The number of points per frame may vary between publishes.
+</Note>
+
+### Field reference
+
+<ResponseField name="x" type="float32" required>
+  X-axis coordinate of the point in Cartesian space. Unit: meters.
+</ResponseField>
+
+<ResponseField name="y" type="float32" required>
+  Y-axis coordinate of the point in Cartesian space. Unit: meters.
+</ResponseField>
+
+<ResponseField name="z" type="float32" required>
+  Z-axis coordinate of the point in Cartesian space. Unit: meters.
+</ResponseField>
+
+<ResponseField name="intensity" type="float32" required>
+  Surface reflectivity measured by the laser return. Range: `0.0` to `255.0`.
+</ResponseField>
+
+<ResponseField name="tag" type="uint8" required>
+  Livox-specific point tag byte. Encodes return type and noise classification as defined in the Livox SDK documentation.
+</ResponseField>
+
+<ResponseField name="line" type="uint8" required>
+  Laser line (scan line) index within the LiDAR. Mid-360 uses 4 lines; HAP uses 6 lines.
+</ResponseField>
+
+<ResponseField name="timestamp" type="float64" required>
+  Absolute timestamp of the point. Encoded as a floating-point offset in nanoseconds from the package base time.
+</ResponseField>
+
+  </Tab>
+  <Tab title="CustomMsg (format 1)">
+
+## Livox CustomMsg format
+
+Set `xfer_format=1` to publish a `livox_ros_driver2/CustomMsg` message. This format groups all points in a frame under a shared `timebase`, with each point recording its own time as an offset relative to that base.
+
+### CustomMsg fields
+
+<ResponseField name="header" type="std_msgs/Header" required>
+  Standard ROS message header. The `stamp` field is set to the base time of the first point in the package. The `frame_id` is set from the `frame_id` launch parameter.
+</ResponseField>
+
+<ResponseField name="timebase" type="uint64" required>
+  Absolute timestamp of the first point in the package, in nanoseconds. All `CustomPoint.offset_time` values are relative to this base.
+</ResponseField>
+
+<ResponseField name="point_num" type="uint32" required>
+  Total number of points in the `points` array.
+</ResponseField>
+
+<ResponseField name="lidar_id" type="uint8" required>
+  Numeric identifier of the LiDAR device that produced this package. Derived from the device handle.
+</ResponseField>
+
+<ResponseField name="rsvd" type="uint8[3]" required>
+  Reserved bytes. Do not use.
+</ResponseField>
+
+<ResponseField name="points" type="CustomPoint[]" required>
+  Array of point records. See the CustomPoint field reference below.
+
+  <Expandable title="CustomPoint fields">
+    <ResponseField name="offset_time" type="uint32" required>
+      Time offset of this point relative to `timebase`, in nanoseconds.
+    </ResponseField>
+    <ResponseField name="x" type="float32" required>
+      X-axis coordinate. Unit: meters.
+    </ResponseField>
+    <ResponseField name="y" type="float32" required>
+      Y-axis coordinate. Unit: meters.
+    </ResponseField>
+    <ResponseField name="z" type="float32" required>
+      Z-axis coordinate. Unit: meters.
+    </ResponseField>
+    <ResponseField name="reflectivity" type="uint8" required>
+      Surface reflectivity of the point. Range: `0` to `255`.
+    </ResponseField>
+    <ResponseField name="tag" type="uint8" required>
+      Livox-specific point tag byte. Encodes return type and noise classification.
+    </ResponseField>
+    <ResponseField name="line" type="uint8" required>
+      Laser line (scan line) index within the LiDAR. Mid-360 uses 4 lines; HAP uses 6 lines.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Message definition
+
+<CodeGroup>
+
+```text CustomMsg.msg
+# Livox publish pointcloud msg format.
+
+std_msgs/Header header    # ROS standard message header
+uint64 timebase           # The time of first point
+uint32 point_num          # Total number of pointclouds
+uint8  lidar_id           # Lidar device id number
+uint8[3]  rsvd            # Reserved use
+CustomPoint[] points      # Pointcloud data
+```
+
+```text CustomPoint.msg
+# Livox custom pointcloud format.
+
+uint32 offset_time      # offset time relative to the base time
+float32 x               # X axis, unit:m
+float32 y               # Y axis, unit:m
+float32 z               # Z axis, unit:m
+uint8 reflectivity      # reflectivity, 0~255
+uint8 tag               # livox tag
+uint8 line              # laser number in lidar
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="PCL PointXYZI (format 2)">
+
+## PCL PointXYZI format
+
+Set `xfer_format=2` to publish a `sensor_msgs/PointCloud2` message with fields matching the PCL library's `pcl::PointXYZI` structure. This format is compatible with PCL-based processing pipelines.
+
+<Warning>
+  This format is available in **ROS1 only**. In ROS2, the driver logs an error message and does not publish when `xfer_format=2` is set. Use `xfer_format=0` or `xfer_format=1` in ROS2.
+</Warning>
+
+### Fields
+
+<ResponseField name="x" type="float32" required>
+  X-axis coordinate. Unit: meters.
+</ResponseField>
+
+<ResponseField name="y" type="float32" required>
+  Y-axis coordinate. Unit: meters.
+</ResponseField>
+
+<ResponseField name="z" type="float32" required>
+  Z-axis coordinate. Unit: meters.
+</ResponseField>
+
+<ResponseField name="intensity" type="float32" required>
+  Surface reflectivity, mapped from the raw Livox reflectivity value.
+</ResponseField>
+
+For the full `pcl::PointXYZI` structure, refer to `point_types.hpp` in the PCL library source.
+
+<Tip>
+  Use this format when you want direct compatibility with PCL algorithms that expect `pcl::PointXYZI` without any additional conversion.
+</Tip>
+
+  </Tab>
+</Tabs>
+
+## Format comparison
+
+| Field | PointXYZRTLT (0) | CustomMsg (1) | PCL PointXYZI (2) |
+|-------|-----------------|---------------|-------------------|
+| x, y, z | `float32` | `float32` | `float32` |
+| Reflectivity | `float32` (0.0–255.0) | `uint8` (0–255) | `float32` |
+| Tag | `uint8` | `uint8` | — |
+| Line number | `uint8` | `uint8` | — |
+| Timestamp | Per-point `float64` | Base + `uint32` offset | Frame-level only |
+| ROS2 support | Yes | Yes | No |

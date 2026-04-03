@@ -1,0 +1,80 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Livox ROS Driver 2",
+  "projectDescription": "A ROS/ROS2 driver package for Livox LiDAR sensors (HAP and Mid-360), providing point cloud and IMU data publishing with flexible configuration.",
+  "theme": "aspen",
+  "primaryColor": "#24344c",
+  "lightColor": "#8c94a4",
+  "darkColor": "#cfd3d9",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Installation & Build",
+            "pages": [
+              "installation/requirements",
+              "installation/build-ros1",
+              "installation/build-ros2"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/launch-files",
+              "configuration/lidar-config",
+              "configuration/multi-lidar"
+            ]
+          },
+          {
+            "group": "Message Formats",
+            "pages": [
+              "messages/overview",
+              "messages/custom-point-cloud",
+              "messages/imu-data"
+            ]
+          },
+          {
+            "group": "Guides & Troubleshooting",
+            "pages": [
+              "guides/rviz-visualization",
+              "guides/time-synchronization",
+              "guides/changelog",
+              "guides/faq"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "ROS1 (Melodic/Noetic) and ROS2 (Foxy/Humble) support",
+    "HAP and Mid-360 LiDAR device compatibility",
+    "Multiple point cloud output formats: PointXYZRTLT, Livox CustomMsg, PCL PointXYZI",
+    "IMU data publishing",
+    "Multi-LiDAR support with per-device topics",
+    "JSON-based LiDAR configuration (IP, ports, extrinsic parameters)",
+    "Configurable publish frequency up to 100 Hz",
+    "gPTP and GPS time synchronization support"
+  ],
+  "publicApiSurface": [
+    "livox_ros_driver2_node (ROS node)",
+    "sensor_msgs/PointCloud2 topic (xfer_format=0: PointXYZRTLT, xfer_format=2: PointXYZI)",
+    "livox_ros_driver2/CustomMsg topic (xfer_format=1)",
+    "sensor_msgs/Imu topic",
+    "CustomMsg.msg (header, timebase, point_num, lidar_id, points[])",
+    "CustomPoint.msg (offset_time, x, y, z, reflectivity, tag, line)",
+    "launch parameter: publish_freq (float, default 10.0 Hz)",
+    "launch parameter: multi_topic (0=shared topic, 1=per-device topic)",
+    "launch parameter: xfer_format (0=PointXYZRTLT, 1=CustomMsg, 2=PointXYZI)",
+    "JSON config: ip, pcl_data_type, pattern_mode, blind_spot_set, extrinsic_parameter"
+  ]
+}

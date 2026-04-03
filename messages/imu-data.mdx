@@ -1,0 +1,101 @@
+---
+title: "IMU data"
+description: "Topic details and field reference for IMU data published as sensor_msgs/Imu by Livox ROS Driver 2."
+---
+
+Livox ROS Driver 2 publishes inertial measurement unit data from the LiDAR's built-in IMU sensor as `sensor_msgs/Imu` messages.
+
+## Topic
+
+| Topic | Message type |
+|-------|-------------|
+| `/livox/imu` | `sensor_msgs/Imu` |
+
+<Note>
+  IMU publishing is enabled by default since driver version v1.1.1. No additional parameter is required to receive IMU data.
+</Note>
+
+## Multi-topic mode
+
+When `multi_topic` is set to `1` in your launch file, each LiDAR device publishes IMU data on its own topic. The topic name is derived from the device's IP address with periods replaced by underscores.
+
+For example, a device at `192.168.1.100` publishes IMU data to:
+
+```
+/livox/imu_192_168_1_100
+```
+
+## Message fields
+
+The driver populates the following fields in `sensor_msgs/Imu`. Fields not listed here (such as `orientation` and the covariance matrices) are left at their zero-initialized defaults, as Livox hardware does not provide orientation estimates.
+
+<ResponseField name="header" type="std_msgs/Header" required>
+  Standard ROS message header.
+
+  <Expandable title="header fields">
+    <ResponseField name="header.stamp" type="time" required>
+      Timestamp of the IMU sample. Set to the hardware timestamp reported by the LiDAR, converted to ROS time.
+    </ResponseField>
+    <ResponseField name="header.frame_id" type="string" required>
+      Fixed to `"livox_frame"`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="angular_velocity" type="geometry_msgs/Vector3" required>
+  Angular velocity reported by the IMU gyroscope.
+
+  <Expandable title="angular_velocity fields">
+    <ResponseField name="angular_velocity.x" type="float64" required>
+      Angular velocity around the X axis. Unit: rad/s.
+    </ResponseField>
+    <ResponseField name="angular_velocity.y" type="float64" required>
+      Angular velocity around the Y axis. Unit: rad/s.
+    </ResponseField>
+    <ResponseField name="angular_velocity.z" type="float64" required>
+      Angular velocity around the Z axis. Unit: rad/s.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="linear_acceleration" type="geometry_msgs/Vector3" required>
+  Linear acceleration reported by the IMU accelerometer.
+
+  <Expandable title="linear_acceleration fields">
+    <ResponseField name="linear_acceleration.x" type="float64" required>
+      Linear acceleration along the X axis. Unit: m/s².
+    </ResponseField>
+    <ResponseField name="linear_acceleration.y" type="float64" required>
+      Linear acceleration along the Y axis. Unit: m/s².
+    </ResponseField>
+    <ResponseField name="linear_acceleration.z" type="float64" required>
+      Linear acceleration along the Z axis. Unit: m/s².
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="orientation" type="geometry_msgs/Quaternion">
+  Not populated. Livox LiDAR hardware does not provide orientation estimates. The field is left at its default zero value.
+</ResponseField>
+
+## Recording IMU data (ROS1)
+
+In ROS1, you can record IMU data to a rosbag file using the `enable_imu_bag` launch parameter:
+
+```xml launch file
+<param name="enable_imu_bag" type="bool" value="true"/>
+```
+
+Set `enable_imu_bag` to `true` and `output_data_type` to `1` to write IMU messages to the bag file instead of publishing them to the live topic.
+
+<Tip>
+  To record both point cloud and IMU data simultaneously, set both `enable_lidar_bag` and `enable_imu_bag` to `true` in your launch file.
+</Tip>
+
+## Mid-360 line number information
+
+Since driver version v1.1.1, the Mid-360 provides valid laser line-number information in its point cloud data. The `line` field in each point record reflects one of the four laser lines used by the Mid-360 sensor.
+
+<Note>
+  This line number information is present in point cloud messages, not in the IMU message. See the [point cloud formats reference](/messages/custom-point-cloud) for details on the `line` field.
+</Note>

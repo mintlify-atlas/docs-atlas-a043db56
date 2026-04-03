@@ -1,0 +1,129 @@
+---
+title: "RViz visualization"
+description: "Visualize Livox LiDAR point clouds in RViz using the built-in launch files."
+---
+
+The Livox ROS Driver 2 ships with RViz-enabled launch files that start both the driver node and RViz in a single command. The `.rviz` configuration files are pre-configured with the correct topic (`/livox/lidar`) and frame (`livox_frame`).
+
+## Launch the driver with RViz
+
+<Steps>
+  <Step title="Build and source your workspace">
+    Build the driver and source the workspace before running any launch file.
+
+    <CodeGroup>
+
+    ```bash ROS1 (Noetic)
+    source /opt/ros/noetic/setup.sh
+    ./build.sh ROS1
+    source ../../devel/setup.sh
+    ```
+
+    ```bash ROS2 (Humble)
+    source /opt/ros/humble/setup.sh
+    ./build.sh humble
+    source ../../install/setup.sh
+    ```
+
+    </CodeGroup>
+  </Step>
+
+  <Step title="Launch the driver with RViz">
+    Use one of the RViz-enabled launch files. The HAP and MID360 variants are shown below.
+
+    <CodeGroup>
+
+    ```bash ROS1 — HAP
+    roslaunch livox_ros_driver2 rviz_HAP.launch
+    ```
+
+    ```bash ROS1 — MID360
+    roslaunch livox_ros_driver2 rviz_MID360.launch
+    ```
+
+    ```bash ROS2 — HAP
+    ros2 launch livox_ros_driver2 rviz_HAP_launch.py
+    ```
+
+    ```bash ROS2 — MID360
+    ros2 launch livox_ros_driver2 rviz_MID360_launch.py
+    ```
+
+    </CodeGroup>
+
+    <Note>
+      The `launch_ROS1/` directory contains all ROS1 launch files and the `launch_ROS2/` directory contains all ROS2 launch files. The `rviz_mixed.launch` (ROS1) and `rviz_mixed.py` (ROS2) files support connecting both HAP and MID360 devices simultaneously.
+    </Note>
+  </Step>
+
+  <Step title="Confirm the Fixed Frame in RViz">
+    Once RViz opens, verify the **Global Options** panel on the left:
+
+    1. In the **Displays** panel, expand **Global Options**.
+    2. Set **Fixed Frame** to `livox_frame`.
+    3. Confirm the **PointCloud2** display is checked (enabled).
+
+    The pre-configured `.rviz` files set `Fixed Frame: livox_frame` automatically, so this step is only needed if you open RViz manually or reset the configuration.
+  </Step>
+
+  <Step title="Verify the point cloud topic">
+    The default topic subscribed to by the PointCloud2 display is `/livox/lidar`. This matches the default output of the driver.
+
+    If no data appears, check that the driver node is running and publishing:
+
+    <CodeGroup>
+
+    ```bash ROS1
+    rostopic hz /livox/lidar
+    ```
+
+    ```bash ROS2
+    ros2 topic hz /livox/lidar
+    ```
+
+    </CodeGroup>
+  </Step>
+</Steps>
+
+## RViz configuration details
+
+The `.rviz` files bundled with the driver (`config/display_point_cloud_ROS1.rviz` and `config/display_point_cloud_ROS2.rviz`) use the following key settings:
+
+| Setting | Value |
+|---|---|
+| Fixed Frame | `livox_frame` |
+| PointCloud2 topic | `/livox/lidar` |
+| Color transformer | Intensity |
+| Style | Points |
+| Decay time | 1 s |
+
+## The `frame_id` parameter
+
+The `frame_id` parameter in the launch file sets the coordinate frame that all published messages use. It defaults to `livox_frame` in both the ROS1 and ROS2 launch files:
+
+<CodeGroup>
+
+```xml ROS1 (rviz_HAP.launch)
+<arg name="msg_frame_id" default="livox_frame"/>
+<param name="frame_id" type="string" value="$(arg msg_frame_id)"/>
+```
+
+```python ROS2 (rviz_HAP_launch.py)
+frame_id = 'livox_frame'
+```
+
+</CodeGroup>
+
+If you change `frame_id` in the launch file, update **Fixed Frame** in RViz to match.
+
+## RViz display not showing points
+
+<Note>
+  This is the most common setup issue. If the RViz grid appears but no point cloud is visible, the Fixed Frame is almost always the cause.
+</Note>
+
+1. In the **Displays** panel, find **Global Options**.
+2. Set **Fixed Frame** to `livox_frame`.
+3. Ensure the **PointCloud2** checkbox is checked.
+
+If points still do not appear after setting the frame, verify the driver is connected to the LiDAR and publishing on `/livox/lidar`.

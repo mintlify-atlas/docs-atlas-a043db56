@@ -1,0 +1,58 @@
+---
+title: "Message formats overview"
+description: "All ROS topics and message types published by Livox ROS Driver 2, including point cloud output formats and IMU data."
+---
+
+Livox ROS Driver 2 publishes two categories of data: point cloud data from the LiDAR sensor, and IMU (inertial measurement unit) data. The exact message type and topic name depend on your launch file configuration.
+
+## Default topics
+
+| Topic | Message type | Description |
+|-------|-------------|-------------|
+| `/livox/lidar` | Varies by `xfer_format` | Point cloud data |
+| `/livox/imu` | `sensor_msgs/Imu` | IMU accelerometer and gyroscope data |
+
+<Note>
+  When `multi_topic` is set to `1`, each LiDAR device publishes to its own topic named using the device IP address. For example, a device at `192.168.1.100` publishes to `/livox/lidar_192_168_1_100` and `/livox/imu_192_168_1_100`.
+</Note>
+
+## Point cloud formats
+
+The `xfer_format` parameter in the launch file controls which message type is used for point cloud output.
+
+| `xfer_format` value | Message type | Format name | ROS support |
+|---------------------|-------------|-------------|-------------|
+| `0` | `sensor_msgs/PointCloud2` | PointXYZRTLT (Livox custom) | ROS1 and ROS2 |
+| `1` | `livox_ros_driver2/CustomMsg` | Livox custom package | ROS1 and ROS2 |
+| `2` | `sensor_msgs/PointCloud2` | PCL PointXYZI | ROS1 only |
+
+### Format 0 — PointXYZRTLT
+
+Published as a standard `sensor_msgs/PointCloud2` with seven custom fields. Each point carries its own timestamp, which means the point count per frame may vary.
+
+### Format 1 — Livox CustomMsg
+
+Published as `livox_ros_driver2/CustomMsg`. This Livox-specific format groups points under a shared `timebase` and stores per-point timestamps as relative offsets from that base time. It is useful when you need the full Livox metadata per point, including tag and line number.
+
+### Format 2 — PCL PointXYZI
+
+Published as a standard `sensor_msgs/PointCloud2` compatible with the PCL library's `pcl::PointXYZI` type. This format is available in ROS1 only. In ROS2, the driver logs an error and skips publishing if this format is selected.
+
+<Warning>
+  `xfer_format=2` is not supported in ROS2. Use `xfer_format=0` or `xfer_format=1` in ROS2 launch files.
+</Warning>
+
+## IMU data
+
+The driver publishes `sensor_msgs/Imu` messages on the `/livox/imu` topic. IMU publishing is enabled by default since driver version v1.1.1. The message includes linear acceleration and angular velocity; the orientation field is not populated by Livox hardware.
+
+## Detailed references
+
+<CardGroup cols={2}>
+  <Card title="Point cloud formats" icon="cloud" href="/messages/custom-point-cloud">
+    Field-level reference for PointXYZRTLT, Livox CustomMsg, and PCL PointXYZI formats.
+  </Card>
+  <Card title="IMU data" icon="gauge" href="/messages/imu-data">
+    Topic details and field reference for `sensor_msgs/Imu` output.
+  </Card>
+</CardGroup>

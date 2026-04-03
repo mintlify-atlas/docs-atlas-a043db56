@@ -1,80 +1,178 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Get from zero to streaming point clouds with Livox ROS Driver 2 in a few steps."
 ---
 
-## Get started in three steps
+## Prerequisites
 
-Get your documentation site running locally and make your first customization.
+Before you begin, make sure the following are in place:
 
-### Step 1: Set up your local environment
+- **Ubuntu** 18.04 (Melodic), 20.04 (Noetic / Foxy), or 22.04 (Humble)
+- **ROS or ROS2** installed with Desktop-Full configuration
+- **Livox-SDK2** installed — follow the [Livox-SDK2 installation guide](https://github.com/Livox-SDK/Livox-SDK2/blob/master/README.md)
+- Your LiDAR connected over Ethernet and assigned an IP address on the same subnet as your host machine
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+<Tip>
+  ROS2 builds use `colcon` as the build tool. If you don't have it installed, follow the [Colcon installation instructions](https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html).
+</Tip>
 
-### Step 2: Deploy your changes
+## Steps
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+<Steps>
+  <Step title="Clone the repository">
+    Clone the driver source code into a `[work_space]/src/` folder. This structure is required by the build tooling.
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    ```bash
+    git clone https://github.com/Livox-SDK/livox_ros_driver2.git ws_livox/src/livox_ros_driver2
+    ```
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    <Warning>
+      You must clone into a folder named `src/` inside your workspace (as shown above). Placing the source elsewhere causes compilation errors.
+    </Warning>
+  </Step>
 
-### Step 3: Go live
+  <Step title="Build the driver">
+    Source your ROS environment, then run `build.sh` with the argument for your ROS version.
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    <CodeGroup>
+
+    ```bash ROS1 (Noetic)
+    source /opt/ros/noetic/setup.sh
+    ./build.sh ROS1
+    ```
+
+    ```bash ROS2 (Foxy)
+    source /opt/ros/foxy/setup.sh
+    ./build.sh ROS2
+    ```
+
+    ```bash ROS2 (Humble)
+    source /opt/ros/humble/setup.sh
+    ./build.sh humble
+    ```
+
+    </CodeGroup>
+
+    The build script handles copying the correct `package.xml`, setting up the `launch/` directory for ROS2, and invoking either `catkin_make` (ROS1) or `colcon build` (ROS2).
+  </Step>
+
+  <Step title="Configure your LiDAR">
+    The driver reads LiDAR settings from a JSON config file. The default config for HAP is at `config/HAP_config.json` and for Mid-360 at `config/MID360_config.json`.
+
+    Open the config file for your device and update the IP addresses to match your network:
+
+    ```json config/HAP_config.json
+    {
+      "lidar_summary_info": {
+        "lidar_type": 8
+      },
+      "HAP": {
+        "lidar_net_info": {
+          "cmd_data_port": 56000,
+          "push_msg_port": 0,
+          "point_data_port": 57000,
+          "imu_data_port": 58000,
+          "log_data_port": 59000
+        },
+        "host_net_info": {
+          "cmd_data_ip": "192.168.1.5",
+          "cmd_data_port": 56000,
+          "push_msg_ip": "",
+          "push_msg_port": 0,
+          "point_data_ip": "192.168.1.5",
+          "point_data_port": 57000,
+          "imu_data_ip": "192.168.1.5",
+          "imu_data_port": 58000,
+          "log_data_ip": "",
+          "log_data_port": 59000
+        }
+      },
+      "lidar_configs": [
+        {
+          "ip": "192.168.1.100",
+          "pcl_data_type": 1,
+          "pattern_mode": 0,
+          "blind_spot_set": 50,
+          "extrinsic_parameter": {
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        }
+      ]
+    }
+    ```
+
+    The key fields to update:
+
+    | Field | Description |
+    | ----- | ----------- |
+    | `host_net_info.cmd_data_ip` / `point_data_ip` / `imu_data_ip` | IP address of your host machine |
+    | `lidar_configs[].ip` | IP address of the LiDAR device |
+
+    The launch file for each device points to its config via the `user_config_path` parameter. For HAP this is `config/HAP_config.json`; for Mid-360 it is `config/MID360_config.json`.
+  </Step>
+
+  <Step title="Source the workspace and launch the driver">
+    Source the workspace setup file for your ROS version, then launch the driver with RViz to verify point cloud output.
+
+    <CodeGroup>
+
+    ```bash ROS1
+    source ../../devel/setup.sh
+    roslaunch livox_ros_driver2 rviz_HAP.launch
+    ```
+
+    ```bash ROS2
+    source ../../install/setup.sh
+    ros2 launch livox_ros_driver2 rviz_HAP_launch.py
+    ```
+
+    </CodeGroup>
+
+    RViz will open automatically and display the incoming point cloud. If no points appear, check the **Global Options > Fixed Frame** field in RViz and set it to `livox_frame`, then enable the **PointCloud2** display.
+
+    <Note>
+      If you see a `liblivox_sdk_shared.so` error on ROS2, add `/usr/local/lib` to your library path:
+
+      ```bash
+      export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
+      ```
+
+      To make this permanent, add the line to your `~/.bashrc` and run `source ~/.bashrc`.
+    </Note>
+  </Step>
+</Steps>
+
+## Available launch files
+
+The `launch_ROS1/` and `launch_ROS2/` directories contain several preconfigured launch files:
+
+| ROS1 launch file | ROS2 launch file | Device | Output |
+| ---------------- | ---------------- | ------ | ------ |
+| `rviz_HAP.launch` | `rviz_HAP_launch.py` | HAP | PointCloud2 + RViz |
+| `msg_HAP.launch` | `msg_HAP_launch.py` | HAP | Livox customized point cloud |
+| `rviz_MID360.launch` | `rviz_MID360_launch.py` | Mid-360 | PointCloud2 + RViz |
+| `msg_MID360.launch` | `msg_MID360_launch.py` | Mid-360 | Livox customized point cloud |
+| `rviz_mixed.launch` | `rviz_mixed.py` | HAP + Mid-360 | PointCloud2 + RViz |
+| `msg_mixed.launch` | — | HAP + Mid-360 | Livox customized point cloud |
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Installation" icon="wrench" href="/installation/requirements">
+    Detailed requirements and SDK setup.
+  </Card>
+  <Card title="Launch file configuration" icon="sliders" href="/configuration/launch-files">
+    Tune publish frequency, transfer format, and frame ID.
+  </Card>
+  <Card title="LiDAR config" icon="network-wired" href="/configuration/lidar-config">
+    Configure IP addresses, scan patterns, and extrinsic parameters.
+  </Card>
+  <Card title="Message formats" icon="message" href="/messages/overview">
+    Reference for point cloud and IMU message structures.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

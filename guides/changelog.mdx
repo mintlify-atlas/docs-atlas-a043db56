@@ -1,0 +1,75 @@
+---
+title: "Changelog"
+description: "Release history for Livox ROS Driver 2."
+---
+
+All notable changes to Livox ROS Driver 2 are documented here.
+
+<Warning>
+  **Breaking change in v1.2.0:** The `PointXYZRTL` point cloud format was renamed to `PointXYZRTLT`. A `float64 timestamp` field was added to each point. Any code that reads or processes `PointXYZRTL` fields by name or struct offset must be updated to use `PointXYZRTLT`. See the [time synchronization guide](/guides/time-synchronization) for details.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="v1.2.4">
+    ### Fixed
+    - Optimized framing performance.
+  </Accordion>
+
+  <Accordion title="v1.2.3">
+    ### Fixed
+    - Optimized framing logic and reduced CPU usage.
+    - Fixed several known issues.
+  </Accordion>
+
+  <Accordion title="v1.2.1">
+    ### Fixed
+    - Fixed offset time error in `CustomMsg` format message publishing.
+  </Accordion>
+
+  <Accordion title="v1.2.0">
+    ### Added
+    - Revised the frame segmentation logic. The number of points per frame may now vary between frames.
+    - Added a `float64 timestamp` field to each point in the `PointXYZRTLT` format. **The previous `PointXYZRTL` format has been updated to `PointXYZRTLT`.** Compatibility with existing code must be verified.
+
+    ### Fixed
+    - Improved support for gPTP (IEEE 1588) and GPS time synchronization.
+  </Accordion>
+
+  <Accordion title="v1.1.3">
+    ### Fixed
+    - Improved performance when running in ROS2 Humble.
+  </Accordion>
+
+  <Accordion title="v1.1.2">
+    ### Changed
+    - Changed the publish frequency range to [0.5 Hz, 10 Hz].
+
+    ### Fixed
+    - Fixed a high CPU usage problem.
+  </Accordion>
+
+  <Accordion title="v1.1.1">
+    ### Added
+    - Added valid line-number information to MID-360 point cloud data.
+    - Enabled IMU publishing by default.
+
+    ### Changed
+    - Updated the README.
+  </Accordion>
+
+  <Accordion title="v1.0.0">
+    ### Added
+    - Support for Mid-360 LiDAR.
+    - Support for Ubuntu 22.04 with ROS2 Humble.
+    - Multi-topic support: when `multi_topic=1`, the topic name suffix corresponds to the IP address of each LiDAR.
+
+    ### Changed
+    - Removed the embedded SDK. Livox-SDK2 is now a separate dependency.
+    - ROS2 does not support message publishing with PCL native data types (`xfer_format=2` is ROS1 only).
+
+    ### Fixed
+    - Fixed IMU packet loss.
+    - Fixed conflicts with the original Livox ROS Driver.
+    - Fixed HAP LiDAR publishing `PointCloud2` and `CustomMsg` format point clouds with no line number.
+  </Accordion>
+</AccordionGroup>
